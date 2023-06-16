@@ -40,26 +40,45 @@ fn main() {
     eprintln!("\nDone.");
 }
 
+/// Calculate if and where a ray hits
 fn hit_sphere(center: Vec3, radius: f64, ray: &Ray) -> f64 {
-    let oc = ray.origin - center;
+    let offset_vector = ray.origin - center;
+
+    // Coefficients for the quadratic formula
     let a = ray.direction.length_squared();
-    let half_b = oc.dot(ray.direction);
-    let c = oc.length_squared() - radius.powi(2);
+    let half_b = offset_vector.dot(ray.direction);
+    let c = offset_vector.length_squared() - radius.powi(2);
+
     let discriminant = half_b * half_b - a * c;
+
+    // if discriminant is negative, there's no real roots, hence no intersection
     if discriminant < 0.0 {
-        -1.0
-    } else {
-        (-half_b - discriminant.sqrt()) / a
+        return -1.0;
     }
+
+    // Return the smaller root of the quadratic equation (entering point of ray)
+    (-half_b - discriminant.sqrt()) / a
 }
 
+/// Calculate the color of a rayt
 pub fn ray_color(ray: Ray) -> Vec3 {
+    // Check for intersection with sphere
     let t = hit_sphere(Vec3::new(0.0, 0.0, -1.0), 0.4, &ray);
+
+    // If t is positive, the ray intersects the sphere
     if t > 0.0 {
-        let n = (ray.at(t) - Vec3::new(0.0, 0.0, -1.0)).unit_vec();
-        return Vec3::new(n.x + 1.0, n.y + 1.0, n.z + 1.0) * 0.5;
+        let normal_vector = (ray.at(t) - Vec3::new(0.0, 0.0, -1.0)).unit_vec();
+        return Vec3::new(
+            normal_vector.x + 1.0,
+            normal_vector.y + 1.0,
+            normal_vector.z + 1.0,
+        ) * 0.5;
     }
+
+    // If t is not positive, compute a gradient background color
     let unit_direction = ray.direction.unit_vec();
-    let t = 0.5 * (unit_direction.y + 1.0);
-    Vec3::all(1.0) * (1.0 - t) + Vec3::new(0.5, 0.7, 1.0) * t
+    let gradient_factor = 0.5 * (unit_direction.y + 1.0);
+
+    // Linear blend between color x and y
+    Vec3::all(1.0) * (1.0 - gradient_factor) + Vec3::new(0.5, 0.7, 1.0) * gradient_factor
 }
