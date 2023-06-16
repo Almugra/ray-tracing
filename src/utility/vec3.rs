@@ -1,4 +1,4 @@
-use std::ops::{Add, Div, Mul, Sub};
+use std::ops::{Add, Div, Index, Mul, Sub};
 
 use super::ray::Ray;
 
@@ -42,6 +42,31 @@ impl Vec3 {
     pub fn unit_vec(&self) -> Vec3 {
         *self / self.length()
     }
+
+    pub fn dot(&self, other: Vec3) -> f64 {
+        self.x * other.x + self.y * other.y + self.z * other.z
+    }
+
+    pub fn cross(&self, other: Vec3) -> Vec3 {
+        Vec3 {
+            x: self.y * other.z - self.z * other.y,
+            y: self.z * other.x - self.x * other.z,
+            z: self.x * other.y - self.y * other.x,
+        }
+    }
+}
+
+impl Index<usize> for Vec3 {
+    type Output = f64;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        match index {
+            0 => &self.x,
+            1 => &self.y,
+            2 => &self.z,
+            _ => panic!(),
+        }
+    }
 }
 
 impl Div<f64> for Vec3 {
@@ -60,6 +85,14 @@ impl Mul<f64> for Vec3 {
 
     fn mul(self, rhs: f64) -> Self::Output {
         self::Vec3::new(self.x * rhs, self.y * rhs, self.z * rhs)
+    }
+}
+
+impl Sub<f64> for Vec3 {
+    type Output = Self;
+
+    fn sub(self, rhs: f64) -> Self::Output {
+        self::Vec3::new(self.x - rhs, self.y - rhs, self.z - rhs)
     }
 }
 
@@ -85,10 +118,4 @@ impl Add for Vec3 {
     fn add(self, rhs: Self) -> Self::Output {
         self::Vec3::new(self.x + rhs.x, self.y + rhs.y, self.z + rhs.z)
     }
-}
-
-pub fn ray_color(r: Ray) -> Vec3 {
-    let unit_direction = r.direction.unit_vec();
-    let t = 0.5 * (unit_direction.y + 1.0);
-    Vec3::all(1.0) * (1.0 - t) + Vec3::new(0.5, 0.7, 1.0) * t
 }
