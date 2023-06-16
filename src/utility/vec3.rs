@@ -1,7 +1,5 @@
 use std::ops::{Add, Div, Index, Mul, Sub};
 
-use super::ray::Ray;
-
 #[derive(Default, PartialEq, Clone, Copy)]
 pub struct Vec3 {
     pub x: f64,
@@ -35,7 +33,7 @@ impl Vec3 {
         self.length_squared().sqrt()
     }
 
-    fn length_squared(&self) -> f64 {
+    pub fn length_squared(&self) -> f64 {
         self.x.powi(2) + self.y.powi(2) + self.z.powi(2)
     }
 
