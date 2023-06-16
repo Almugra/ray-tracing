@@ -1,24 +1,28 @@
 #![allow(dead_code)]
 
+pub mod utility;
+
+use std::io::Write;
+
 const IMAGE_WIDTH: usize = 256;
 const IMAGE_HEIGHT: usize = 256;
 
 fn main() {
-    println!("P3\n{IMAGE_WIDTH} {IMAGE_HEIGHT}\n255\n");
+    println!("P3\n{IMAGE_WIDTH} {IMAGE_HEIGHT}\n255");
 
-    let mut j = IMAGE_HEIGHT - 1;
-    while j > 0 {
+    (0..IMAGE_HEIGHT).for_each(|j| {
+        let j = IMAGE_HEIGHT - 1 - j;
+        eprint!("\rScanlines remaining: {j} ");
+        std::io::stderr().flush().unwrap();
         (0..IMAGE_WIDTH).for_each(|i| {
-            let r = (i as f64) / (IMAGE_WIDTH - 1) as f64;
-            let g = (j as f64) / (IMAGE_HEIGHT - 1) as f64;
-            let b = 0.25;
+            let pixel_color = utility::vec3::Vec3 {
+                x: (i as f64) / (IMAGE_WIDTH - 1) as f64,
+                y: (j as f64) / (IMAGE_HEIGHT - 1) as f64,
+                z: 0.25,
+            };
 
-            let ir = (255.999 * r) as usize;
-            let ig = (255.999 * g) as usize;
-            let ib = (255.999 * b) as usize;
-
-            println!("{ir} {ig} {ib}\n")
+            pixel_color.write_color();
         });
-        j -= 1;
-    }
+    });
+    eprintln!("\nDone.");
 }
