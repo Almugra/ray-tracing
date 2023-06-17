@@ -10,9 +10,10 @@ mod ray;
 
 fn main() {
     let mut world: HitList<Sphere> = HitList::default();
-    world.push(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0));
+    world.push(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.2));
     world.push(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5));
     let samples_per_pixel = 100.0;
+    let max_depth = 50;
     let mut rng = rand::thread_rng();
 
     let camera = Camera::new(16.0 / 9.0, 400.0, 1.0, 2.0);
@@ -29,7 +30,7 @@ fn main() {
                 let u = (i as f32 + rng.gen_range(0.0..1.0)) / (camera.image.width - 1.0);
                 let v = (j as f32 + rng.gen_range(0.0..1.0)) / (camera.image.height - 1.0);
                 let ray = camera.get_ray(u, v);
-                pixel_color += ray_color(&ray, &world);
+                pixel_color += ray_color(&ray, &world, max_depth);
             });
 
             write_color(pixel_color, 100.0);
@@ -41,9 +42,9 @@ fn main() {
 
 pub fn write_color(v: Vec3, samples_per_pixel: f32) {
     let scale = 1.0 / samples_per_pixel;
-    let r = v.x * scale;
-    let g = v.y * scale;
-    let b = v.z * scale;
+    let r = (v.x * scale).sqrt();
+    let g = (v.y * scale).sqrt();
+    let b = (v.z * scale).sqrt();
 
     println!(
         "{} {} {}",

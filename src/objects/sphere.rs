@@ -1,6 +1,9 @@
 use glam::Vec3;
 
-use crate::{hit::{hittable::Hittable, hitrecord::HitRecord}, ray::Ray};
+use crate::{
+    hit::{hitrecord::HitRecord, hittable::Hittable},
+    ray::Ray,
+};
 
 #[derive(Default)]
 pub struct Sphere {
