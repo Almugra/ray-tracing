@@ -1,59 +1,86 @@
-pub mod utility;
+use crate::{
+    camera::Camera,
+    hit::HitList,
+    materials::{dialectric::Dialectric, lambertian::Lambertian, metal::Metal},
+    objects::sphere::Sphere,
+    ray::ray_color,
+};
+use glam::f32::Vec3;
+use rand::Rng;
+use std::{io::Write, sync::Arc};
 
-use std::io::Write;
-
-use crate::utility::{ray::Ray, vec3::Vec3};
-
-const ASPECT_RATIO: f64 = 16.0 / 9.0;
-const IMAGE_WIDTH: usize = 400;
-const IMAGE_HEIGHT: usize = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as usize;
-
-const VIEWPORT_HEIGHT: f64 = 2.0;
-const VIEWPORT_WIDTH: f64 = ASPECT_RATIO * VIEWPORT_HEIGHT;
-const FOCAL_LENGTH: f64 = 1.0;
+mod camera;
+mod hit;
+mod materials;
+mod objects;
+mod ray;
 
 fn main() {
-    let origin = Vec3::default();
-    let horizontal = Vec3::new(VIEWPORT_WIDTH, 0.0, 0.0);
-    let vertical = Vec3::new(0.0, VIEWPORT_HEIGHT, 0.0);
-    let lower_left_corner =
-        origin - horizontal / 2.0 - vertical / 2.0 - Vec3::new(0.0, 0.0, FOCAL_LENGTH);
+    let mat_ground = Lambertian::new(Vec3::new(0.8, 0.8, 0.0));
+    let mat_center = Lambertian::new(Vec3::new(0.2, 0.5, 0.1));
+    let mat_left = Dialectric::new(1.5);
+    let mat_right = Metal::new(Vec3::new(0.2, 0.1, 0.8), 0.5);
 
-    println!("P3\n{IMAGE_WIDTH} {IMAGE_HEIGHT}\n255");
+    let mut world: HitList<Sphere> = HitList::default();
+    world.push(Sphere::new(
+        Vec3::new(0.0, -100.5, -1.0),
+        100.0,
+        Arc::new(mat_ground),
+    ));
+    world.push(Sphere::new(
+        Vec3::new(0.0, 0.0, -1.0),
+        0.5,
+        Arc::new(mat_center),
+    ));
+    world.push(Sphere::new(
+        Vec3::new(-1.0, 0.0, -1.0),
+        -0.4,
+        Arc::new(mat_left),
+    ));
+    world.push(Sphere::new(
+        Vec3::new(1.0, 0.0, -1.0),
+        0.5,
+        Arc::new(mat_right),
+    ));
 
-    (0..IMAGE_HEIGHT).for_each(|j| {
-        let j = IMAGE_HEIGHT - 1 - j;
-        eprint!("\rScanlines remaining: {j} ");
+    let samples_per_pixel = 100.0;
+    let max_depth = 50;
+    let mut rng = rand::thread_rng();
+
+    let camera = Camera::new(16.0 / 9.0, 400.0, 1.0, 2.0);
+
+    println!("P3\n{} {}\n255", camera.image.width, camera.image.height);
+
+    (0..camera.image.height as usize).for_each(|j| {
+        let j = camera.image.height as usize - 1 - j;
+        eprint!("\rScanlines remaining: {:004}", j);
         std::io::stderr().flush().unwrap();
-        (0..IMAGE_WIDTH).for_each(|i| {
-            let u = i as f64 / (IMAGE_WIDTH - 1) as f64;
-            let v = j as f64 / (IMAGE_HEIGHT - 1) as f64;
-            let ray = Ray {
-                origin,
-                direction: lower_left_corner + horizontal * u + vertical * v - origin,
-            };
-            let pixel_color = ray_color(ray);
+        (0..camera.image.width as usize).for_each(|i| {
+            let mut pixel_color = Vec3::ZERO;
+            (0..samples_per_pixel as usize).for_each(|_| {
+                let u = (i as f32 + rng.gen_range(0.0..1.0)) / (camera.image.width - 1.0);
+                let v = (j as f32 + rng.gen_range(0.0..1.0)) / (camera.image.height - 1.0);
+                let ray = camera.get_ray(u, v);
+                pixel_color += ray_color(&ray, &world, max_depth);
+            });
 
-            pixel_color.write_color();
+            write_color(pixel_color, 100.0);
         });
     });
+
     eprintln!("\nDone.");
 }
 
-fn hit_sphere(center: Vec3, radius: f64, ray: &Ray) -> bool {
-    let oc = ray.origin - center;
-    let a = ray.direction.dot(ray.direction);
-    let b = oc.dot(ray.direction) * 2.0;
-    let c = oc.dot(oc) - radius.powi(2);
-    let discriminant = b * b - 4.0 * a * c;
-    discriminant > 0.0
-}
+pub fn write_color(v: Vec3, samples_per_pixel: f32) {
+    let scale = 1.0 / samples_per_pixel;
+    let r = (v.x * scale).sqrt();
+    let g = (v.y * scale).sqrt();
+    let b = (v.z * scale).sqrt();
 
-pub fn ray_color(ray: Ray) -> Vec3 {
-    if hit_sphere(Vec3::new(0.0, 0.0, -1.0), 0.4, &ray) {
-        return Vec3::new(1.0, 0.0, 0.0);
-    }
-    let unit_direction = ray.direction.unit_vec();
-    let t = 0.5 * (unit_direction.y + 1.0);
-    Vec3::all(1.0) * (1.0 - t) + Vec3::new(0.5, 0.7, 1.0) * t
+    println!(
+        "{} {} {}",
+        (256.0 * r.clamp(0.0, 0.999)) as usize,
+        (256.0 * g.clamp(0.0, 0.999)) as usize,
+        (256.0 * b.clamp(0.0, 0.999)) as usize,
+    );
 }
