@@ -1,19 +1,21 @@
-use super::{hitrecord::HitRecord, hittable::Hittable, ray::Ray, vec3::Vec3};
+use glam::Vec3;
+
+use super::{hitrecord::HitRecord, hittable::Hittable, ray::Ray};
 
 #[derive(Default)]
 pub struct Sphere {
     pub center: Vec3,
-    pub radius: f64,
+    pub radius: f32,
 }
 
 impl Sphere {
-    pub fn new(center: Vec3, radius: f64) -> Self {
+    pub fn new(center: Vec3, radius: f32) -> Self {
         Self { center, radius }
     }
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64, hit_record: &mut HitRecord) -> bool {
+    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, hit_record: &mut HitRecord) -> bool {
         let offset_vector = ray.origin - self.center;
 
         // Coefficients for the quadratic formula

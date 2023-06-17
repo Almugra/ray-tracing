@@ -1,4 +1,4 @@
-use crate::utility::vec3::Vec3;
+use glam::Vec3;
 
 use super::ray::Ray;
 
@@ -6,7 +6,7 @@ use super::ray::Ray;
 pub struct HitRecord {
     pub point: Vec3,
     pub normal: Vec3,
-    pub t: f64,
+    pub t: f32,
     pub front_face: bool,
 }
 
@@ -16,7 +16,15 @@ impl HitRecord {
         self.normal = if self.front_face {
             outward_normal
         } else {
-            outward_normal.reverse()
+            reverse(outward_normal)
         }
+    }
+}
+
+pub fn reverse(vec: Vec3) -> Vec3 {
+    Vec3 {
+        x: -vec.x,
+        y: -vec.y,
+        z: -vec.z,
     }
 }
