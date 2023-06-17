@@ -36,6 +36,6 @@ impl Material for Metal {
     }
 }
 
-fn reflect(v: Vec3, n: Vec3) -> Vec3 {
+pub fn reflect(v: Vec3, n: Vec3) -> Vec3 {
     v - (2.0 * v.dot(n) * n)
 }

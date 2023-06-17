@@ -1,7 +1,7 @@
 use crate::{
     camera::Camera,
     hit::HitList,
-    materials::{lambertian::Lambertian, metal::Metal},
+    materials::{dialectric::Dialectric, lambertian::Lambertian, metal::Metal},
     objects::sphere::Sphere,
     ray::ray_color,
 };
@@ -17,9 +17,9 @@ mod ray;
 
 fn main() {
     let mat_ground = Lambertian::new(Vec3::new(0.8, 0.8, 0.0));
-    let mat_center = Lambertian::new(Vec3::new(0.7, 0.3, 0.3));
-    let mat_left = Metal::new(Vec3::new(0.7, 0.7, 0.3), 0.3);
-    let mat_right = Metal::new(Vec3::new(0.2, 0.6, 0.3), 1.0);
+    let mat_center = Lambertian::new(Vec3::new(0.2, 0.5, 0.1));
+    let mat_left = Dialectric::new(1.5);
+    let mat_right = Metal::new(Vec3::new(0.2, 0.1, 0.8), 0.5);
 
     let mut world: HitList<Sphere> = HitList::default();
     world.push(Sphere::new(
@@ -34,7 +34,7 @@ fn main() {
     ));
     world.push(Sphere::new(
         Vec3::new(-1.0, 0.0, -1.0),
-        0.5,
+        -0.4,
         Arc::new(mat_left),
     ));
     world.push(Sphere::new(
