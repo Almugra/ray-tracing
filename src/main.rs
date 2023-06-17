@@ -1,17 +1,48 @@
-use crate::{camera::Camera, hit::HitList, objects::sphere::Sphere, ray::ray_color};
+use crate::{
+    camera::Camera,
+    hit::HitList,
+    materials::{lambertian::Lambertian, metal::Metal},
+    objects::sphere::Sphere,
+    ray::ray_color,
+};
 use glam::f32::Vec3;
 use rand::Rng;
-use std::io::Write;
+use std::{io::Write, sync::Arc};
 
 mod camera;
 mod hit;
+mod materials;
 mod objects;
 mod ray;
 
 fn main() {
+    let mat_ground = Lambertian::new(Vec3::new(0.8, 0.8, 0.0));
+    let mat_center = Lambertian::new(Vec3::new(0.7, 0.3, 0.3));
+    let mat_left = Metal::new(Vec3::new(0.7, 0.7, 0.3), 0.3);
+    let mat_right = Metal::new(Vec3::new(0.2, 0.6, 0.3), 1.0);
+
     let mut world: HitList<Sphere> = HitList::default();
-    world.push(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.2));
-    world.push(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5));
+    world.push(Sphere::new(
+        Vec3::new(0.0, -100.5, -1.0),
+        100.0,
+        Arc::new(mat_ground),
+    ));
+    world.push(Sphere::new(
+        Vec3::new(0.0, 0.0, -1.0),
+        0.5,
+        Arc::new(mat_center),
+    ));
+    world.push(Sphere::new(
+        Vec3::new(-1.0, 0.0, -1.0),
+        0.5,
+        Arc::new(mat_left),
+    ));
+    world.push(Sphere::new(
+        Vec3::new(1.0, 0.0, -1.0),
+        0.5,
+        Arc::new(mat_right),
+    ));
+
     let samples_per_pixel = 100.0;
     let max_depth = 50;
     let mut rng = rand::thread_rng();

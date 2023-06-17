@@ -27,13 +27,15 @@ pub fn ray_color<T: Hittable>(ray: &Ray, world: &HitList<T>, depth: isize) -> Ve
     }
 
     if world.hit(ray, 0.001, f32::MAX, &mut hit_record) {
-        let target = hit_record.point + hit_record.normal + random_unit_vector();
-        return 0.5
-            * ray_color(
-                &Ray::new(hit_record.point, target - hit_record.point),
-                world,
-                depth - 1,
-            );
+        let Some(material) = hit_record.material.clone() else {
+            unreachable!()
+        };
+
+        if let Some((attenuation, scattered)) = material.scatter(ray, &hit_record) {
+            return attenuation * ray_color(&scattered, world, depth - 1);
+        }
+
+        return Vec3::ZERO;
     }
 
     let unit_direction = unit_vec(ray.direction);
@@ -57,6 +59,6 @@ fn random_in_unit_sphere() -> Vec3 {
     }
 }
 
-fn random_unit_vector() -> Vec3 {
+pub fn random_unit_vector() -> Vec3 {
     unit_vec(random_in_unit_sphere())
 }

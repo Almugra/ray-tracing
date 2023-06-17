@@ -1,19 +1,27 @@
+use std::sync::Arc;
+
 use glam::Vec3;
 
 use crate::{
     hit::{hitrecord::HitRecord, hittable::Hittable},
+    materials::Material,
     ray::Ray,
 };
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct Sphere {
     pub center: Vec3,
     pub radius: f32,
+    pub material: Option<Arc<dyn Material>>,
 }
 
 impl Sphere {
-    pub fn new(center: Vec3, radius: f32) -> Self {
-        Self { center, radius }
+    pub fn new(center: Vec3, radius: f32, material: Arc<dyn Material>) -> Self {
+        Self {
+            center,
+            radius,
+            material: Some(material),
+        }
     }
 }
 
@@ -49,6 +57,7 @@ impl Hittable for Sphere {
         hit_record.point = ray.at(hit_record.t);
         let outward_normal = (hit_record.point - self.center) / self.radius;
         hit_record.set_face_normal(ray, outward_normal);
+        hit_record.material = self.material.clone();
 
         true
     }

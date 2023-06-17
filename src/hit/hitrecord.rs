@@ -1,13 +1,16 @@
+use std::sync::Arc;
+
 use glam::Vec3;
 
-use crate::ray::Ray;
+use crate::{materials::Material, ray::Ray};
 
-#[derive(Default, Clone, Copy)]
+#[derive(Default, Clone)]
 pub struct HitRecord {
     pub point: Vec3,
     pub normal: Vec3,
     pub t: f32,
     pub front_face: bool,
+    pub material: Option<Arc<dyn Material>>,
 }
 
 impl HitRecord {
