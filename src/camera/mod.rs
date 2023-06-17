@@ -27,7 +27,7 @@ impl Camera {
         }
     }
 
-    fn get_ray(&self, u: f32, v: f32) -> Ray {
+    pub fn get_ray(&self, u: f32, v: f32) -> Ray {
         Ray {
             origin: self.origin,
             direction: self.viewport.lower_left_corner
