@@ -1,6 +1,6 @@
 use glam::Vec3;
 
-use super::ray::Ray;
+use crate::ray::Ray;
 
 #[derive(Default, Clone, Copy)]
 pub struct HitRecord {

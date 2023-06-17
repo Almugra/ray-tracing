@@ -1,4 +1,9 @@
-use super::{hitrecord::HitRecord, hittable::Hittable, ray::Ray};
+use crate::ray::Ray;
+
+use self::{hitrecord::HitRecord, hittable::Hittable};
+
+pub mod hitrecord;
+pub mod hittable;
 
 #[derive(Default)]
 pub struct HitList<T>

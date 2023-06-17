@@ -1,8 +1,7 @@
 use glam::Vec3;
-
 use self::{image::Image, viewport::Viewport};
-
 use super::ray::Ray;
+
 pub mod image;
 pub mod viewport;
 

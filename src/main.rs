@@ -1,18 +1,23 @@
-pub mod utility;
-
+use crate::{
+    camera::Camera,
+    hit::HitList,
+    objects::sphere::Sphere,
+    ray::{ray_color, Ray},
+};
+use glam::f32::Vec3;
 use std::io::Write;
 
-use glam::f32::Vec3;
-use utility::{hitrecord::HitRecord, hittable::Hittable};
-
-use crate::utility::{camera::Camera, hitlist::HitList, ray::Ray, sphere::Sphere};
+mod camera;
+mod hit;
+mod objects;
+mod ray;
 
 fn main() {
     let mut world: HitList<Sphere> = HitList::default();
     world.push(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0));
     world.push(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5));
 
-    let camera = Camera::new(16.0 / 9.0, 400.0, 1.0, 2.0);
+    let camera = Camera::new(4.0 / 3.0, 400.0, 1.0, 2.0);
 
     println!("P3\n{} {}\n255", camera.image.width, camera.image.height);
 
@@ -36,22 +41,6 @@ fn main() {
         });
     });
     eprintln!("\nDone.");
-}
-
-/// Calculate the color of a ray
-pub fn ray_color<T: Hittable>(ray: &Ray, world: &HitList<T>) -> Vec3 {
-    let mut hit_record = HitRecord::default();
-    if world.hit(ray, 0.0, f32::MAX, &mut hit_record) {
-        return (hit_record.normal + Vec3::ONE) * 0.5;
-    }
-
-    let unit_direction = unit_vec(ray.direction);
-    let t = (unit_direction.y + 1.0) * 0.5;
-    Vec3::ONE * (1.0 - t) + Vec3::new(0.5, 0.7, 1.0)
-}
-
-pub fn unit_vec(v: Vec3) -> Vec3 {
-    v / v.length()
 }
 
 pub fn write_color(v: Vec3) {
