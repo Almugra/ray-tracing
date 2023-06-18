@@ -18,52 +18,48 @@ mod view;
 type Point3 = Vec3;
 
 fn main() {
-    let mat_ground = Lambertian::new(Vec3::new(0.1, 0.2, 0.2));
-    let mat_center = Metal::new(Vec3::new(0.9, 0.5, 0.1), 0.9);
-    let mat_left = Dialectric::new(1.5);
-    let mat_left_two = Dialectric::new(1.5);
-    let mat_right = Metal::new(Vec3::new(0.2, 0.1, 0.8), 0.7);
-
     let mut world: HitList<Sphere> = HitList::default();
+
+    let mat_ground = Lambertian::new(Vec3::new(0.1, 0.2, 0.2));
     world.push(Sphere::new(
-        Vec3::new(0.0, -100.5, -1.0),
-        100.0,
+        Point3::new(0.0, -10000.0, 0.0),
+        10000.0,
         Arc::new(mat_ground),
     ));
+
+    let mat_center = Metal::new(Vec3::new(0.9, 0.5, 0.1), 0.9);
     world.push(Sphere::new(
-        Vec3::new(0.0, 0.0, -1.0),
-        0.5,
+        Point3::new(1.0, 1.0, -1.0),
+        1.0,
         Arc::new(mat_center),
     ));
+
+    let mat_left = Dialectric::new(1.5);
     world.push(Sphere::new(
-        Vec3::new(-1.0, 0.0, -1.0),
-        0.5,
+        Point3::new(4.0, 1.0, 2.4),
+        1.0,
         Arc::new(mat_left),
     ));
+
+    let mat_right = Metal::new(Vec3::new(0.2, 0.1, 0.8), 0.1);
     world.push(Sphere::new(
-        Vec3::new(-1.0, 0.0, -1.0),
-        -0.45,
-        Arc::new(mat_left_two),
-    ));
-    world.push(Sphere::new(
-        Vec3::new(1.0, 0.0, -1.0),
-        0.5,
+        Point3::new(2.5, 1.0, 1.3),
+        1.0,
         Arc::new(mat_right),
     ));
 
-    let samples_per_pixel = 100.0;
+    let samples_per_pixel = 200.0;
     let max_depth = 50;
     let mut rng = rand::thread_rng();
 
-    let ar = 16.0 / 9.0;
-    let image = Image::new(ar, 1920.0);
-    let camera = Camera::new(
-        Point3::new(-2.0, 2.0, 1.0),
-        Point3::new(0.0, 0.0, -1.0),
-        Vec3::new(0.0, 1.0, 0.0),
-        20,
-        ar,
-    );
+    let ar = 4.0 / 3.0;
+    let image = Image::new(ar, 1200.0);
+    let lookfrom = Point3::new(14.0, 2.8, 2.5);
+    let lookat = Point3::new(-8.0, -0.3, -0.6);
+    let vup = Vec3::new(0.0, 1.0, 0.0);
+    let aperture = 0.3;
+    let dist_to_focus = 10.0;
+    let camera = Camera::new(lookfrom, lookat, vup, 18, ar, aperture, dist_to_focus);
 
     println!("P3\n{} {}\n255", image.width, image.height);
 

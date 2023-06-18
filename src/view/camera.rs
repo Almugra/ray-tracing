@@ -1,4 +1,5 @@
 use glam::Vec3;
+use rand::Rng;
 
 use crate::{
     ray::{unit_vec, Ray},
@@ -10,6 +11,10 @@ pub struct Camera {
     pub lower_left_corner: Point3,
     pub horizontal: Vec3,
     pub vertical: Vec3,
+    pub u: Vec3,
+    pub v: Vec3,
+    pub w: Vec3,
+    pub lens_radius: f32,
 }
 
 impl Camera {
@@ -19,6 +24,8 @@ impl Camera {
         vup: Vec3,
         vfov: usize,
         aspect_ratio: f32,
+        aperture: f32,
+        focus_dist: f32,
     ) -> Self {
         let theta = (vfov as f32).to_radians();
         let h = (theta / 2.0).tan();
@@ -29,22 +36,41 @@ impl Camera {
         let u = unit_vec(vup.cross(w));
         let v = w.cross(u);
 
-        let horizontal = viewport_widt * u;
-        let vertical = viewport_height * v;
+        let horizontal = focus_dist * viewport_widt * u;
+        let vertical = focus_dist * viewport_height * v;
 
         Self {
             origin: lookfrom,
-            lower_left_corner: lookfrom - horizontal / 2.0 - vertical / 2.0 - w,
+            lower_left_corner: lookfrom - horizontal / 2.0 - vertical / 2.0 - w * focus_dist,
             horizontal,
             vertical,
+            u,
+            v,
+            w,
+            lens_radius: aperture / 2.0,
         }
     }
 
     pub fn get_ray(&self, s: f32, t: f32) -> Ray {
+        let rd = self.lens_radius * random_in_unit_disk();
+        let offset = self.u * rd.x + self.v * rd.y;
+
         Ray {
-            origin: self.origin,
+            origin: self.origin + offset,
             direction: self.lower_left_corner + self.horizontal * s + self.vertical * t
-                - self.origin,
+                - self.origin
+                - offset,
         }
+    }
+}
+
+fn random_in_unit_disk() -> Vec3 {
+    let mut rng = rand::thread_rng();
+    loop {
+        let p = Vec3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0);
+        if p.length_squared() >= 1.0 {
+            continue;
+        }
+        return p;
     }
 }
