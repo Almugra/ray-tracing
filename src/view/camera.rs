@@ -7,14 +7,13 @@ use crate::{
 };
 
 pub struct Camera {
-    pub origin: Point3,
-    pub lower_left_corner: Point3,
-    pub horizontal: Vec3,
-    pub vertical: Vec3,
-    pub u: Vec3,
-    pub v: Vec3,
-    pub w: Vec3,
-    pub lens_radius: f32,
+    origin: Point3,
+    lower_left_corner: Point3,
+    horizontal: Vec3,
+    vertical: Vec3,
+    u: Vec3,
+    v: Vec3,
+    lens_radius: f32,
 }
 
 impl Camera {
@@ -46,7 +45,6 @@ impl Camera {
             vertical,
             u,
             v,
-            w,
             lens_radius: aperture / 2.0,
         }
     }

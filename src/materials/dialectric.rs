@@ -10,6 +10,7 @@ pub struct Dialectric {
 }
 
 impl Dialectric {
+    #[allow(unused)]
     pub fn new(ir: f32) -> Self {
         Self {
             index_of_refraction: ir,

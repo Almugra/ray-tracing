@@ -12,6 +12,7 @@ pub struct Lambertian {
 }
 
 impl Lambertian {
+    #[allow(unused)]
     pub fn new(color: Vec3) -> Self {
         Self { albedo: color }
     }

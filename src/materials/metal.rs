@@ -13,6 +13,7 @@ pub struct Metal {
 }
 
 impl Metal {
+    #[allow(unused)]
     pub fn new(color: Vec3, fuzz: f32) -> Self {
         Self {
             albedo: color,
