@@ -6,6 +6,7 @@ use crate::{
     view::{camera::Camera, image::Image},
 };
 use glam::f32::Vec3;
+use objects::moving_sphere::MovingSphere;
 use rand::Rng;
 use rayon::prelude::{IndexedParallelIterator, IntoParallelRefMutIterator, ParallelIterator};
 use std::sync::{
@@ -36,7 +37,16 @@ fn main() {
     let vup = Vec3::new(0.0, 1.0, 0.0);
     let aperture = 0.1;
     let dist_to_focus = (lookfrom - lookat).length();
-    let camera = Camera::new(lookfrom, lookat, vup, 50, ar, aperture, dist_to_focus);
+    let camera = Camera::new(
+        lookfrom,
+        lookat,
+        vup,
+        50,
+        ar,
+        aperture,
+        dist_to_focus,
+        (0.0, 1.0),
+    );
 
     println!("P3\n{} {}\n255", image.width, image.height);
 
@@ -74,29 +84,30 @@ fn main() {
     eprintln!("\n{:?}", now.elapsed());
 }
 
-fn build_world() -> HitList<Sphere> {
-    let mut world: HitList<Sphere> = HitList::default();
+fn build_world() -> HitList {
+    let mut world: HitList = HitList::default();
 
     let mat_ground = Metal::new(Vec3::new(0.2, 0.2, 0.2), 0.8);
-    world.push(Sphere::new(
+    world.push(Box::new(Sphere::new(
         Point3::new(0.0, -1000.0, 0.0),
         1000.0,
         Arc::new(mat_ground),
-    ));
+    )));
 
     let mat_right = Metal::new(Vec3::new(0.2, 0.7, 0.9), 0.3);
-    world.push(Sphere::new(
-        Point3::new(1.0, 1.0, -1.0),
+    world.push(Box::new(MovingSphere::new(
+        (Point3::new(1.0, 1.0, -1.0), Point3::new(1.0, 1.3, -1.0)),
+        (0.0, 1.0),
         1.0,
         Arc::new(mat_right),
-    ));
+    )));
 
     let mat_left = Metal::new(Vec3::new(0.9, 0.2, 0.1), 0.6);
-    world.push(Sphere::new(
+    world.push(Box::new(Sphere::new(
         Point3::new(-1.0, 1.0, -1.0),
         1.0,
         Arc::new(mat_left),
-    ));
+    )));
     world
 }
 

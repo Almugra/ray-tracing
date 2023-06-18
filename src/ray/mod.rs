@@ -6,11 +6,16 @@ use crate::hit::{hitrecord::HitRecord, hittable::Hittable, HitList};
 pub struct Ray {
     pub origin: Vec3,
     pub direction: Vec3,
+    pub time: f32,
 }
 
 impl Ray {
-    pub fn new(origin: Vec3, direction: Vec3) -> Self {
-        Self { origin, direction }
+    pub fn new(origin: Vec3, direction: Vec3, time: f32) -> Self {
+        Self {
+            origin,
+            direction,
+            time,
+        }
     }
 
     pub fn at(&self, t: f32) -> Vec3 {
@@ -19,7 +24,7 @@ impl Ray {
 }
 
 /// Calculate the color of a ray
-pub fn ray_color<T: Hittable>(ray: &Ray, world: &HitList<T>, depth: isize) -> Vec3 {
+pub fn ray_color(ray: &Ray, world: &HitList, depth: isize) -> Vec3 {
     let mut hit_record = HitRecord::default();
 
     if depth <= 0 {
