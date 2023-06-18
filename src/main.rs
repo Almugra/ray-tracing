@@ -1,25 +1,28 @@
 use crate::{
-    camera::Camera,
     hit::HitList,
     materials::{dialectric::Dialectric, lambertian::Lambertian, metal::Metal},
     objects::sphere::Sphere,
     ray::ray_color,
+    view::{camera::Camera, image::Image},
 };
 use glam::f32::Vec3;
 use rand::Rng;
 use std::{io::Write, sync::Arc};
 
-mod camera;
 mod hit;
 mod materials;
 mod objects;
 mod ray;
+mod view;
+
+type Point3 = Vec3;
 
 fn main() {
-    let mat_ground = Lambertian::new(Vec3::new(0.8, 0.8, 0.0));
-    let mat_center = Lambertian::new(Vec3::new(0.2, 0.5, 0.1));
+    let mat_ground = Lambertian::new(Vec3::new(0.1, 0.2, 0.2));
+    let mat_center = Metal::new(Vec3::new(0.9, 0.5, 0.1), 0.9);
     let mat_left = Dialectric::new(1.5);
-    let mat_right = Metal::new(Vec3::new(0.2, 0.1, 0.8), 0.5);
+    let mat_left_two = Dialectric::new(1.5);
+    let mat_right = Metal::new(Vec3::new(0.2, 0.1, 0.8), 0.7);
 
     let mut world: HitList<Sphere> = HitList::default();
     world.push(Sphere::new(
@@ -34,8 +37,13 @@ fn main() {
     ));
     world.push(Sphere::new(
         Vec3::new(-1.0, 0.0, -1.0),
-        -0.4,
+        0.5,
         Arc::new(mat_left),
+    ));
+    world.push(Sphere::new(
+        Vec3::new(-1.0, 0.0, -1.0),
+        -0.45,
+        Arc::new(mat_left_two),
     ));
     world.push(Sphere::new(
         Vec3::new(1.0, 0.0, -1.0),
@@ -47,19 +55,27 @@ fn main() {
     let max_depth = 50;
     let mut rng = rand::thread_rng();
 
-    let camera = Camera::new(16.0 / 9.0, 400.0, 1.0, 2.0);
+    let ar = 16.0 / 9.0;
+    let image = Image::new(ar, 1920.0);
+    let camera = Camera::new(
+        Point3::new(-2.0, 2.0, 1.0),
+        Point3::new(0.0, 0.0, -1.0),
+        Vec3::new(0.0, 1.0, 0.0),
+        20,
+        ar,
+    );
 
-    println!("P3\n{} {}\n255", camera.image.width, camera.image.height);
+    println!("P3\n{} {}\n255", image.width, image.height);
 
-    (0..camera.image.height as usize).for_each(|j| {
-        let j = camera.image.height as usize - 1 - j;
+    (0..image.height as usize).for_each(|j| {
+        let j = image.height as usize - 1 - j;
         eprint!("\rScanlines remaining: {:004}", j);
         std::io::stderr().flush().unwrap();
-        (0..camera.image.width as usize).for_each(|i| {
+        (0..image.width as usize).for_each(|i| {
             let mut pixel_color = Vec3::ZERO;
             (0..samples_per_pixel as usize).for_each(|_| {
-                let u = (i as f32 + rng.gen_range(0.0..1.0)) / (camera.image.width - 1.0);
-                let v = (j as f32 + rng.gen_range(0.0..1.0)) / (camera.image.height - 1.0);
+                let u = (i as f32 + rng.gen_range(0.0..1.0)) / (image.width - 1.0);
+                let v = (j as f32 + rng.gen_range(0.0..1.0)) / (image.height - 1.0);
                 let ray = camera.get_ray(u, v);
                 pixel_color += ray_color(&ray, &world, max_depth);
             });
