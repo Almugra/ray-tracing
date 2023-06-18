@@ -1,36 +1,47 @@
 use std::sync::Arc;
 
-use glam::Vec3;
+use crate::{hit::hittable::Hittable, materials::Material, Point3};
 
-use crate::{
-    hit::{hitrecord::HitRecord, hittable::Hittable},
-    materials::Material,
-    ray::Ray,
-};
-
-#[derive(Default, Clone)]
-pub struct Sphere {
-    pub center: Vec3,
+pub struct MovingSphere {
+    pub center: (Point3, Point3),
+    pub time: (f32, f32),
     pub radius: f32,
     pub material: Option<Arc<dyn Material>>,
 }
 
-impl Sphere {
-    pub fn new(center: Vec3, radius: f32, material: Arc<dyn Material>) -> Self {
+unsafe impl Send for MovingSphere {}
+unsafe impl Sync for MovingSphere {}
+
+impl MovingSphere {
+    #[allow(unused)]
+    pub fn new(
+        center: (Point3, Point3),
+        time: (f32, f32),
+        radius: f32,
+        material: Arc<dyn Material>,
+    ) -> Self {
         Self {
             center,
+            time,
             radius,
             material: Some(material),
         }
     }
+    fn center(&self, time: f32) -> Point3 {
+        self.center.0
+            + ((time - self.time.0) / (self.time.1 - self.time.0) * (self.center.1 - self.center.0))
+    }
 }
 
-unsafe impl Send for Sphere {}
-unsafe impl Sync for Sphere {}
-
-impl Hittable for Sphere {
-    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, hit_record: &mut HitRecord) -> bool {
-        let offset_vector = ray.origin - self.center;
+impl Hittable for MovingSphere {
+    fn hit(
+        &self,
+        ray: &crate::ray::Ray,
+        t_min: f32,
+        t_max: f32,
+        hit_record: &mut crate::hit::hitrecord::HitRecord,
+    ) -> bool {
+        let offset_vector = ray.origin - self.center(ray.time);
 
         // Coefficients for the quadratic formula
         let a = ray.direction.length_squared();
@@ -58,7 +69,7 @@ impl Hittable for Sphere {
         // Validated intersection at this point
         hit_record.t = nearest_root;
         hit_record.point = ray.at(hit_record.t);
-        let outward_normal = (hit_record.point - self.center) / self.radius;
+        let outward_normal = (hit_record.point - self.center(ray.time)) / self.radius;
         hit_record.set_face_normal(ray, outward_normal);
         hit_record.material = self.material.clone();
 

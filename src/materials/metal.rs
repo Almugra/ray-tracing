@@ -13,6 +13,7 @@ pub struct Metal {
 }
 
 impl Metal {
+    #[allow(unused)]
     pub fn new(color: Vec3, fuzz: f32) -> Self {
         Self {
             albedo: color,
@@ -27,6 +28,7 @@ impl Material for Metal {
         let scattered = Ray::new(
             hit_record.point,
             reflected + self.fuzz * random_unit_vector(),
+            ray_in.time
         );
         let attenuation = self.albedo;
         if scattered.direction.dot(hit_record.normal) > 0.0 {

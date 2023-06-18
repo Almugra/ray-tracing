@@ -10,6 +10,7 @@ pub struct Dialectric {
 }
 
 impl Dialectric {
+    #[allow(unused)]
     pub fn new(ir: f32) -> Self {
         Self {
             index_of_refraction: ir,
@@ -52,7 +53,7 @@ impl Material for Dialectric {
             refract(unit_direction, hit_record.normal, refraction_ratio)
         };
 
-        let scattered = Ray::new(hit_record.point, direction);
+        let scattered = Ray::new(hit_record.point, direction, ray_in.time);
 
         Some((attenuation, scattered))
     }

@@ -5,21 +5,20 @@ use self::{hitrecord::HitRecord, hittable::Hittable};
 pub mod hitrecord;
 pub mod hittable;
 
+type Object = Box<dyn Hittable + Send + Sync>;
+
 #[derive(Default)]
-pub struct HitList<T>
-where
-    T: Hittable,
-{
-    pub objects: Vec<T>,
+pub struct HitList {
+    pub objects: Vec<Object>,
 }
 
-impl<T: Hittable> HitList<T> {
-    pub fn push(&mut self, object: T) {
+impl HitList {
+    pub fn push(&mut self, object: Object) {
         self.objects.push(object);
     }
 }
 
-impl<T: Hittable> Hittable for HitList<T> {
+impl Hittable for HitList {
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, hit_record: &mut HitRecord) -> bool {
         let mut temp_rec = HitRecord::default();
         let mut hit_anything = false;
