@@ -25,6 +25,9 @@ impl Sphere {
     }
 }
 
+unsafe impl Send for Sphere {}
+unsafe impl Sync for Sphere {}
+
 impl Hittable for Sphere {
     fn hit(&self, ray: &Ray, t_min: f32, t_max: f32, hit_record: &mut HitRecord) -> bool {
         let offset_vector = ray.origin - self.center;

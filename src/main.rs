@@ -7,7 +7,12 @@ use crate::{
 };
 use glam::f32::Vec3;
 use rand::Rng;
-use std::{io::Write, sync::Arc};
+use rayon::prelude::{IndexedParallelIterator, IntoParallelRefMutIterator, ParallelIterator};
+use std::sync::{
+    atomic::{AtomicU64, Ordering::Relaxed},
+    Arc,
+};
+use std::{io::Write, time::Instant};
 
 mod hit;
 mod materials;
@@ -18,6 +23,58 @@ mod view;
 type Point3 = Vec3;
 
 fn main() {
+    let world = build_world();
+
+    let samples_per_pixel = 100.0;
+    let max_depth = 50;
+
+    let ar = 4.0 / 3.0;
+    let image = Image::new(ar, 400.0);
+
+    let lookfrom = Point3::new(14.0, 2.8, 2.5);
+    let lookat = Point3::new(-8.0, -0.3, -0.6);
+    let vup = Vec3::new(0.0, 1.0, 0.0);
+    let aperture = 0.3;
+    let dist_to_focus = 10.0;
+    let camera = Camera::new(lookfrom, lookat, vup, 18, ar, aperture, dist_to_focus);
+
+    println!("P3\n{} {}\n255", image.width, image.height);
+
+    let now = Instant::now();
+
+    let mut colors = vec![Vec3::default(); (image.height * image.width) as usize];
+
+    let max = colors.len();
+    let count = AtomicU64::new(1);
+    colors
+        .par_iter_mut()
+        .enumerate()
+        .for_each(|(index, pixel_color)| {
+            let j = index / image.width as usize;
+            let i = index % image.width as usize;
+            let o_j = image.height as usize - 1 - j;
+
+            let mut rng = rand::thread_rng();
+
+            for _ in 0..samples_per_pixel as usize {
+                let u = (i as f32 + rng.gen_range(0.0..1.0)) / (image.width - 1.0);
+                let v = (o_j as f32 + rng.gen_range(0.0..1.0)) / (image.height - 1.0);
+                let ray = camera.get_ray(u, v);
+                *pixel_color += ray_color(&ray, &world, max_depth);
+            }
+
+            eprint!("\rpixels: {:004}/{}", count.fetch_add(1, Relaxed), max);
+            std::io::stderr().flush().unwrap();
+        });
+
+    for x in colors {
+        write_color(x, samples_per_pixel);
+    }
+
+    eprintln!("Done.\n{:?}", now.elapsed());
+}
+
+fn build_world() -> HitList<Sphere> {
     let mut world: HitList<Sphere> = HitList::default();
 
     let mat_ground = Lambertian::new(Vec3::new(0.1, 0.2, 0.2));
@@ -47,40 +104,7 @@ fn main() {
         1.0,
         Arc::new(mat_right),
     ));
-
-    let samples_per_pixel = 200.0;
-    let max_depth = 50;
-    let mut rng = rand::thread_rng();
-
-    let ar = 4.0 / 3.0;
-    let image = Image::new(ar, 1200.0);
-    let lookfrom = Point3::new(14.0, 2.8, 2.5);
-    let lookat = Point3::new(-8.0, -0.3, -0.6);
-    let vup = Vec3::new(0.0, 1.0, 0.0);
-    let aperture = 0.3;
-    let dist_to_focus = 10.0;
-    let camera = Camera::new(lookfrom, lookat, vup, 18, ar, aperture, dist_to_focus);
-
-    println!("P3\n{} {}\n255", image.width, image.height);
-
-    (0..image.height as usize).for_each(|j| {
-        let j = image.height as usize - 1 - j;
-        eprint!("\rScanlines remaining: {:004}", j);
-        std::io::stderr().flush().unwrap();
-        (0..image.width as usize).for_each(|i| {
-            let mut pixel_color = Vec3::ZERO;
-            (0..samples_per_pixel as usize).for_each(|_| {
-                let u = (i as f32 + rng.gen_range(0.0..1.0)) / (image.width - 1.0);
-                let v = (j as f32 + rng.gen_range(0.0..1.0)) / (image.height - 1.0);
-                let ray = camera.get_ray(u, v);
-                pixel_color += ray_color(&ray, &world, max_depth);
-            });
-
-            write_color(pixel_color, 100.0);
-        });
-    });
-
-    eprintln!("\nDone.");
+    world
 }
 
 pub fn write_color(v: Vec3, samples_per_pixel: f32) {
