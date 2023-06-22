@@ -31,7 +31,7 @@ impl Material for Dielectric {
         &self,
         ray_in: &crate::ray::Ray,
         hit_record: &crate::hit::hitrecord::HitRecord,
-    ) -> Option<(Color, crate::ray::Ray)> {
+    ) -> Option<(Vector3, crate::ray::Ray)> {
         let attenuation = Color::ONE;
         let refraction_ratio = if hit_record.front_face {
             1.0 / self.index_of_refraction

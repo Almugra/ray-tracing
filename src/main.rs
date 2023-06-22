@@ -19,6 +19,7 @@ use std::{
         Arc,
     },
 };
+use textures::{checker::Checker, solid::SolidColor};
 
 type Vector3 = Vec3;
 type Point3 = Vec3;
@@ -28,16 +29,17 @@ mod hit;
 mod materials;
 mod objects;
 mod ray;
+mod textures;
 mod view;
 
 fn main() {
     let world = build_world();
 
-    let samples_per_pixel = 200.0;
+    let samples_per_pixel = 800.0;
     let max_depth = 50;
 
     let ar = 4.0 / 3.0;
-    let image = Image::new(ar, 400.0);
+    let image = Image::new(ar, 800.0);
 
     let lookfrom = Point3::new(0.0, 2.0, 3.0);
     let lookat = Point3::new(0.0, 0.7, 0.0);
@@ -97,11 +99,14 @@ fn main() {
 fn build_world() -> HitList {
     let mut objects = HitList::default();
 
-    let mat_ground = Lambertian::new(Color::new(0.48, 0.83, 0.53));
+    let checker = Arc::new(Checker::new(
+        Color::new(0.2, 0.3, 0.1),
+        Color::new(0.9, 0.9, 0.9),
+    ));
     objects.push(Arc::new(Sphere::new(
         Point3::new(0.0, -1000.0, 0.0),
         1000.0,
-        Arc::new(mat_ground),
+        Arc::new(Lambertian::new(checker)),
     )));
 
     let mat_right = Dielectric::new(1.5);
@@ -112,7 +117,7 @@ fn build_world() -> HitList {
         Arc::new(mat_right),
     )));
 
-    let mat_left = Metal::new(Color::new(0.9, 0.2, 0.1), 0.0);
+    let mat_left = Metal::new(Arc::new(SolidColor::new(Color::new(0.9, 0.2, 0.1))), 0.0);
     objects.push(Arc::new(Sphere::new(
         Point3::new(-1.0, 1.0, -1.0),
         1.0,

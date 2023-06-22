@@ -1,19 +1,22 @@
+use std::sync::Arc;
+
 use crate::{
     hit::hitrecord::HitRecord,
     ray::{random_unit_vector, unit_vec, Ray},
+    textures::texture::Texture,
     Color, Vector3,
 };
 
 use super::Material;
 
 pub struct Metal {
-    pub albedo: Color,
+    pub albedo: Arc<dyn Texture>,
     pub fuzz: f32,
 }
 
 impl Metal {
     #[allow(unused)]
-    pub fn new(color: Vector3, fuzz: f32) -> Self {
+    pub fn new(color: Arc<dyn Texture>, fuzz: f32) -> Self {
         Self {
             albedo: color,
             fuzz: if fuzz < 1.0 { fuzz } else { 1.0 },
@@ -29,7 +32,9 @@ impl Material for Metal {
             reflected + self.fuzz * random_unit_vector(),
             ray_in.time,
         );
-        let attenuation = self.albedo;
+        let attenuation = self
+            .albedo
+            .value(hit_record.uv.0, hit_record.uv.1, &hit_record.point);
         if scattered.direction.dot(hit_record.normal) > 0.0 {
             return Some((attenuation, scattered));
         }
