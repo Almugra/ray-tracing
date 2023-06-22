@@ -1,22 +1,21 @@
 use std::sync::Arc;
 
-use glam::Vec3;
-
 use crate::{
     hit::{hitrecord::HitRecord, hittable::Hittable},
     materials::Material,
     ray::Ray,
+    Point3, Vector3,
 };
 
 #[derive(Default, Clone)]
 pub struct Sphere {
-    pub center: Vec3,
+    pub center: Point3,
     pub radius: f32,
     pub material: Option<Arc<dyn Material>>,
 }
 
 impl Sphere {
-    pub fn new(center: Vec3, radius: f32, material: Arc<dyn Material>) -> Self {
+    pub fn new(center: Vector3, radius: f32, material: Arc<dyn Material>) -> Self {
         Self {
             center,
             radius,

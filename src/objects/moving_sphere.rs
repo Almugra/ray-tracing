@@ -27,6 +27,7 @@ impl MovingSphere {
             material: Some(material),
         }
     }
+
     fn center(&self, time: f32) -> Point3 {
         self.center.0
             + ((time - self.time.0) / (self.time.1 - self.time.0) * (self.center.1 - self.center.0))
