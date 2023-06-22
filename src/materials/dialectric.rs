@@ -1,15 +1,17 @@
-use glam::Vec3;
 use rand::Rng;
 
-use crate::ray::{unit_vec, Ray};
+use crate::{
+    ray::{unit_vec, Ray},
+    Color, Vector3,
+};
 
 use super::{metal::reflect, Material};
 
-pub struct Dialectric {
+pub struct Dielectric {
     pub index_of_refraction: f32,
 }
 
-impl Dialectric {
+impl Dielectric {
     #[allow(unused)]
     pub fn new(ir: f32) -> Self {
         Self {
@@ -24,13 +26,13 @@ impl Dialectric {
     }
 }
 
-impl Material for Dialectric {
+impl Material for Dielectric {
     fn scatter(
         &self,
         ray_in: &crate::ray::Ray,
         hit_record: &crate::hit::hitrecord::HitRecord,
-    ) -> Option<(glam::Vec3, crate::ray::Ray)> {
-        let attenuation = Vec3::ONE;
+    ) -> Option<(Vector3, crate::ray::Ray)> {
+        let attenuation = Color::ONE;
         let refraction_ratio = if hit_record.front_face {
             1.0 / self.index_of_refraction
         } else {
@@ -59,7 +61,7 @@ impl Material for Dialectric {
     }
 }
 
-fn refract(uv: Vec3, n: Vec3, etai_over_etat: f32) -> Vec3 {
+fn refract(uv: Vector3, n: Vector3, etai_over_etat: f32) -> Vector3 {
     let cos_theta = (-uv).dot(n).min(1.0);
     let r_out_perp = etai_over_etat * (uv + cos_theta * n);
     let r_out_parallel = -(1.0 - r_out_perp.length_squared()).sqrt() * n;

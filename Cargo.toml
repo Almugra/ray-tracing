@@ -7,5 +7,5 @@ edition = "2021"
 
 [dependencies]
 rand = "0.8.5"
-glam = "0.24.0"
 rayon = "1.7.0"
+glam = "0.24.0"

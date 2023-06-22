@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{f32::consts::PI, sync::Arc};
 
 use crate::{hit::hittable::Hittable, materials::Material, Point3};
 
@@ -27,9 +27,17 @@ impl MovingSphere {
             material: Some(material),
         }
     }
+
     fn center(&self, time: f32) -> Point3 {
         self.center.0
             + ((time - self.time.0) / (self.time.1 - self.time.0) * (self.center.1 - self.center.0))
+    }
+
+    pub fn get_sphere_uv(p: Point3) -> (f32, f32) {
+        let theta = (-p).y.acos();
+        let phi = (-p).z.atan2(p.x) + PI;
+
+        (phi / (2.0 * PI), theta / PI)
     }
 }
 
@@ -70,6 +78,8 @@ impl Hittable for MovingSphere {
         hit_record.t = nearest_root;
         hit_record.point = ray.at(hit_record.t);
         let outward_normal = (hit_record.point - self.center(ray.time)) / self.radius;
+        let uv = Self::get_sphere_uv(outward_normal);
+        hit_record.uv = uv;
         hit_record.set_face_normal(ray, outward_normal);
         hit_record.material = self.material.clone();
 

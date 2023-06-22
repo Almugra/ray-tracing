@@ -1,18 +1,17 @@
-use glam::Vec3;
 use rand::Rng;
 
 use crate::{
     ray::{unit_vec, Ray},
-    Point3,
+    Point3, Vector3,
 };
 
 pub struct Camera {
     origin: Point3,
     lower_left_corner: Point3,
-    horizontal: Vec3,
-    vertical: Vec3,
-    u: Vec3,
-    v: Vec3,
+    horizontal: Vector3,
+    vertical: Vector3,
+    u: Vector3,
+    v: Vector3,
     lens_radius: f32,
     time: (f32, f32),
 }
@@ -21,7 +20,7 @@ impl Camera {
     pub fn new(
         lookfrom: Point3,
         lookat: Point3,
-        vup: Vec3,
+        vup: Vector3,
         vfov: usize,
         aspect_ratio: f32,
         aperture: f32,
@@ -67,10 +66,10 @@ impl Camera {
     }
 }
 
-fn random_in_unit_disk() -> Vec3 {
+fn random_in_unit_disk() -> Vector3 {
     let mut rng = rand::thread_rng();
     loop {
-        let p = Vec3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0);
+        let p = Vector3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0);
         if p.length_squared() >= 1.0 {
             continue;
         }

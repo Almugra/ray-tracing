@@ -1,27 +1,33 @@
-use std::sync::Arc;
-
-use glam::Vec3;
+use std::{f32::consts::PI, sync::Arc};
 
 use crate::{
     hit::{hitrecord::HitRecord, hittable::Hittable},
     materials::Material,
     ray::Ray,
+    Point3, Vector3,
 };
 
 #[derive(Default, Clone)]
 pub struct Sphere {
-    pub center: Vec3,
+    pub center: Point3,
     pub radius: f32,
     pub material: Option<Arc<dyn Material>>,
 }
 
 impl Sphere {
-    pub fn new(center: Vec3, radius: f32, material: Arc<dyn Material>) -> Self {
+    pub fn new(center: Vector3, radius: f32, material: Arc<dyn Material>) -> Self {
         Self {
             center,
             radius,
             material: Some(material),
         }
+    }
+
+    pub fn get_sphere_uv(p: Point3) -> (f32, f32) {
+        let theta = (-p).y.acos();
+        let phi = (-p).z.atan2(p.x) + PI;
+
+        (phi / (2.0 * PI), theta / PI)
     }
 }
 
@@ -59,6 +65,8 @@ impl Hittable for Sphere {
         hit_record.t = nearest_root;
         hit_record.point = ray.at(hit_record.t);
         let outward_normal = (hit_record.point - self.center) / self.radius;
+        let uv = Self::get_sphere_uv(outward_normal);
+        hit_record.uv = uv;
         hit_record.set_face_normal(ray, outward_normal);
         hit_record.material = self.material.clone();
 

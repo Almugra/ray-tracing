@@ -1,20 +1,22 @@
-use glam::Vec3;
+use std::sync::Arc;
 
 use crate::{
     hit::hitrecord::HitRecord,
     ray::{random_unit_vector, unit_vec, Ray},
+    textures::texture::Texture,
+    Color, Vector3,
 };
 
 use super::Material;
 
 pub struct Metal {
-    pub albedo: Vec3,
+    pub albedo: Arc<dyn Texture>,
     pub fuzz: f32,
 }
 
 impl Metal {
     #[allow(unused)]
-    pub fn new(color: Vec3, fuzz: f32) -> Self {
+    pub fn new(color: Arc<dyn Texture>, fuzz: f32) -> Self {
         Self {
             albedo: color,
             fuzz: if fuzz < 1.0 { fuzz } else { 1.0 },
@@ -23,14 +25,16 @@ impl Metal {
 }
 
 impl Material for Metal {
-    fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<(Vec3, Ray)> {
+    fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<(Color, Ray)> {
         let reflected = reflect(unit_vec(ray_in.direction), hit_record.normal);
         let scattered = Ray::new(
             hit_record.point,
             reflected + self.fuzz * random_unit_vector(),
-            ray_in.time
+            ray_in.time,
         );
-        let attenuation = self.albedo;
+        let attenuation = self
+            .albedo
+            .value(hit_record.uv.0, hit_record.uv.1, &hit_record.point);
         if scattered.direction.dot(hit_record.normal) > 0.0 {
             return Some((attenuation, scattered));
         }
@@ -38,6 +42,6 @@ impl Material for Metal {
     }
 }
 
-pub fn reflect(v: Vec3, n: Vec3) -> Vec3 {
+pub fn reflect(v: Vector3, n: Vector3) -> Vector3 {
     v - (2.0 * v.dot(n) * n)
 }
