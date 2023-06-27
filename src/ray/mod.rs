@@ -26,28 +26,26 @@ impl Ray {
 }
 
 /// Calculate the color of a ray
-pub fn ray_color(ray: &Ray, world: &HitList, depth: isize) -> Color {
+pub fn ray_color(ray: &Ray, background: Color, world: &HitList, depth: isize) -> Color {
     let mut hit_record = HitRecord::default();
 
     if depth <= 0 {
         return Vector3::ZERO;
     }
 
-    if world.hit(ray, 0.001, f32::MAX, &mut hit_record) {
-        let Some(material) = hit_record.material.clone() else {
-            unreachable!()
-        };
-
-        if let Some((attenuation, scattered)) = material.scatter(ray, &hit_record) {
-            return attenuation * ray_color(&scattered, world, depth - 1);
-        }
-
-        return Vector3::ZERO;
+    if !world.hit(ray, 0.001, f32::MAX, &mut hit_record) {
+        return background;
     }
 
-    let unit_direction = unit_vec(ray.direction);
-    let t = (unit_direction.y + 1.0) * 0.5;
-    Vector3::ONE * (1.0 - t) + Vector3::new(0.5, 0.7, 1.0)
+    let Some(material) = hit_record.material.clone() else {
+        unreachable!()
+    };
+
+    if let Some((attenuation, scattered)) = material.scatter(ray, &hit_record) {
+        attenuation * ray_color(&scattered, background, world, depth - 1)
+    } else {
+        material.emitted(hit_record.uv.0, hit_record.uv.1, hit_record.point)
+    }
 }
 
 pub fn unit_vec(v: Vector3) -> Vector3 {
