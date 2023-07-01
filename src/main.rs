@@ -6,6 +6,7 @@ use crate::{
 use glam::Vec3;
 use hit::hitlist::HitList;
 use materials::{dialectric::Dielectric, diffuse_light::DiffuseLight, lambertian::Lambertian};
+use objects::{xy_rectangle::XYRectangle, xz_rectangle::XZRectangle, yz_rectangle::YZRectangle};
 use rand::Rng;
 use rayon::prelude::{IndexedParallelIterator, IntoParallelRefMutIterator, ParallelIterator};
 use std::io::Write;
@@ -17,7 +18,7 @@ use std::{
         Arc,
     },
 };
-use textures::checker::Checker;
+use textures::solid::SolidColor;
 
 type Vector3 = Vec3;
 type Point3 = Vec3;
@@ -31,16 +32,16 @@ mod textures;
 mod view;
 
 fn main() {
-    let world = build_world();
+    let world = cornell_box();
 
-    let samples_per_pixel = 10000.0;
+    let samples_per_pixel = 100.0;
     let max_depth = 50;
 
-    let ar = 4.0 / 3.0;
-    let image = Image::new(ar, 1200.0);
+    let ar = 1.0;
+    let image = Image::new(ar, 400.0);
 
-    let lookfrom = Point3::new(0.0, 2.0, 3.0);
-    let lookat = Point3::new(0.0, 0.7, 0.0);
+    let lookfrom = Point3::new(278.0, 278.0, -800.0);
+    let lookat = Point3::new(278.0, 278.0, 0.0);
     let vup = Vector3::new(0.0, 1.0, 0.0);
     let aperture = 0.1;
     let dist_to_focus = (lookfrom - lookat).length();
@@ -48,7 +49,7 @@ fn main() {
         lookfrom,
         lookat,
         vup,
-        50,
+        40,
         ar,
         aperture,
         dist_to_focus,
@@ -95,32 +96,63 @@ fn main() {
     eprintln!("\n{:?}", now.elapsed());
 }
 
-fn build_world() -> HitList {
+fn cornell_box() -> HitList {
     let mut objects = HitList::default();
 
-    let checker = Arc::new(Checker::new(
-        Color::new(0.2, 0.3, 0.1),
-        Color::new(0.9, 0.9, 0.9),
-    ));
-    objects.push(Arc::new(Sphere::new(
-        Point3::new(0.0, -1000.0, 0.0),
-        1000.0,
-        Arc::new(Lambertian::new(checker)),
+    let red = Arc::new(Lambertian::new(Arc::new(SolidColor::new(Color::new(
+        0.65, 0.05, 0.05,
+    )))));
+    let white = Arc::new(Lambertian::new(Arc::new(SolidColor::new(Color::new(
+        0.73, 0.73, 0.73,
+    )))));
+    let green = Arc::new(Lambertian::new(Arc::new(SolidColor::new(Color::new(
+        0.12, 0.45, 0.15,
+    )))));
+    let light = Arc::new(DiffuseLight::new(Color::new(7.0, 7.0, 7.0)));
+
+    objects.push(Arc::new(YZRectangle::new(
+        (0.0, 555.0),
+        (0.0, 555.0),
+        555.0,
+        green,
+    )));
+    objects.push(Arc::new(YZRectangle::new(
+        (0.0, 555.0),
+        (0.0, 555.0),
+        0.0,
+        red,
+    )));
+    objects.push(Arc::new(XZRectangle::new(
+        (113.0, 443.0),
+        (127.0, 432.0),
+        554.0,
+        light,
+    )));
+    objects.push(Arc::new(XZRectangle::new(
+        (0.0, 555.0),
+        (0.0, 555.0),
+        555.0,
+        white.clone(),
+    )));
+    objects.push(Arc::new(XZRectangle::new(
+        (0.0, 555.0),
+        (0.0, 555.0),
+        0.0,
+        white.clone(),
+    )));
+    objects.push(Arc::new(XYRectangle::new(
+        (0.0, 555.0),
+        (0.0, 555.0),
+        555.0,
+        white,
     )));
 
-    let mat_right = Dielectric::new(1.5);
     objects.push(Arc::new(Sphere::new(
-        Point3::new(1.0, 1.0, -1.0),
-        1.0,
-        Arc::new(mat_right),
+        Point3::new(277.5, 100.0, 277.5),
+        100.0,
+        Arc::new(Dielectric::new(1.5)),
     )));
 
-    let mat_left = DiffuseLight::new(Color::new(7.0, 7.0, 7.0));
-    objects.push(Arc::new(Sphere::new(
-        Point3::new(-1.0, 1.0, -1.0),
-        1.0,
-        Arc::new(mat_left),
-    )));
     objects
 }
 
