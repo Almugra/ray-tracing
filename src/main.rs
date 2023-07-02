@@ -6,8 +6,11 @@ use crate::{
 use glam::Vec3;
 use hit::hitlist::HitList;
 use materials::{dialectric::Dielectric, diffuse_light::DiffuseLight, lambertian::Lambertian};
-use objects::{xy_rectangle::XYRectangle, xz_rectangle::XZRectangle, yz_rectangle::YZRectangle};
+use objects::{
+    block::Block, xy_rectangle::XYRectangle, xz_rectangle::XZRectangle, yz_rectangle::YZRectangle,
+};
 use rand::Rng;
+use ray::{rotate::RotateY, translate::Translate};
 use rayon::prelude::{IndexedParallelIterator, IntoParallelRefMutIterator, ParallelIterator};
 use std::io::Write;
 use std::time::Instant;
@@ -144,14 +147,26 @@ fn cornell_box() -> HitList {
         (0.0, 555.0),
         (0.0, 555.0),
         555.0,
-        white,
+        white.clone(),
     )));
 
-    objects.push(Arc::new(Sphere::new(
-        Point3::new(277.5, 100.0, 277.5),
-        100.0,
-        Arc::new(Dielectric::new(1.5)),
-    )));
+    let block = Arc::new(Block::new(
+        Point3::new(0.0, 0.0, 0.0),
+        Point3::new(165.0, 330.0, 165.0),
+        white.clone(),
+    ));
+    let block = Arc::new(RotateY::new(block, 15.0));
+    let block = Arc::new(Translate::new(Point3::new(265.0, 0.0, 295.0), block));
+    objects.push(block);
+
+    let block1 = Arc::new(Block::new(
+        Point3::new(0.0, 0.0, 0.0),
+        Point3::new(165.0, 165.0, 165.0),
+        white,
+    ));
+    let block1 = Arc::new(RotateY::new(block1, -18.0));
+    let block1 = Arc::new(Translate::new(Point3::new(130.0, 0.0, 65.0), block1));
+    objects.push(block1);
 
     objects
 }

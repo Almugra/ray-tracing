@@ -1,4 +1,6 @@
 use rand::Rng;
+pub mod rotate;
+pub mod translate;
 
 use crate::{
     hit::{hitlist::HitList, hitrecord::HitRecord, hittable::Hittable},
