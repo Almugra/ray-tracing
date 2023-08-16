@@ -10,12 +10,12 @@ use crate::{
 use super::Material;
 
 pub struct Lambertian {
-    pub albedo: Arc<dyn Texture>,
+    pub albedo: Box<dyn Texture>,
 }
 
 impl Lambertian {
     #[allow(unused)]
-    pub fn new(color: Arc<dyn Texture>) -> Self {
+    pub fn new(color: Box<dyn Texture>) -> Self {
         Self { albedo: color }
     }
 }

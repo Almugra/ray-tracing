@@ -1,15 +1,14 @@
 use super::Ray;
 use crate::{hit::hittable::Hittable, Vector3};
-use std::sync::Arc;
 
 pub struct Translate {
     offset: Vector3,
-    object: Arc<dyn Hittable>,
+    object: Box<dyn Hittable>,
 }
 
 impl Translate {
     #[allow(unused)]
-    pub fn new(offset: Vector3, object: Arc<dyn Hittable>) -> Self {
+    pub fn new(offset: Vector3, object: Box<dyn Hittable>) -> Self {
         Self { offset, object }
     }
 }

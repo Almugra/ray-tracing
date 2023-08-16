@@ -10,13 +10,13 @@ use crate::{
 use super::Material;
 
 pub struct Metal {
-    pub albedo: Arc<dyn Texture>,
+    pub albedo: Box<dyn Texture>,
     pub fuzz: f32,
 }
 
 impl Metal {
     #[allow(unused)]
-    pub fn new(color: Arc<dyn Texture>, fuzz: f32) -> Self {
+    pub fn new(color: Box<dyn Texture>, fuzz: f32) -> Self {
         Self {
             albedo: color,
             fuzz: if fuzz < 1.0 { fuzz } else { 1.0 },

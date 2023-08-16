@@ -1,18 +1,16 @@
-use std::sync::Arc;
-
 use crate::hit::hittable::Hittable;
 
 use super::Ray;
 
 pub struct RotateY {
-    object: Arc<dyn Hittable>,
+    object: Box<dyn Hittable>,
     sin_theta: f32,
     cos_theta: f32,
 }
 
 impl RotateY {
     #[allow(unused)]
-    pub fn new(object: Arc<dyn Hittable>, angle: f32) -> Self {
+    pub fn new(object: Box<dyn Hittable>, angle: f32) -> Self {
         let radians = angle.to_radians();
         let sin_theta = radians.sin();
         let cos_theta = radians.cos();

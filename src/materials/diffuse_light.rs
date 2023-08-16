@@ -8,13 +8,13 @@ use crate::{
 use super::Material;
 
 pub struct DiffuseLight {
-    pub emit: Arc<dyn Texture>,
+    pub emit: SolidColor,
 }
 
 impl DiffuseLight {
     pub fn new(c: Color) -> Self {
         Self {
-            emit: Arc::new(SolidColor::new(c)),
+            emit: SolidColor::new(c),
         }
     }
 }

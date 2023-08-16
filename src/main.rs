@@ -1,11 +1,10 @@
 use crate::{
-    objects::sphere::Sphere,
     ray::ray_color,
     view::{camera::Camera, image::Image},
 };
 use glam::Vec3;
 use hit::hitlist::HitList;
-use materials::{dialectric::Dielectric, diffuse_light::DiffuseLight, lambertian::Lambertian};
+use materials::{diffuse_light::DiffuseLight, lambertian::Lambertian};
 use objects::{
     block::Block, xy_rectangle::XYRectangle, xz_rectangle::XZRectangle, yz_rectangle::YZRectangle,
 };
@@ -21,8 +20,8 @@ use std::{
         Arc,
     },
 };
-use textures::solid::SolidColor;
 
+use textures::solid::SolidColor;
 type Vector3 = Vec3;
 type Point3 = Vec3;
 type Color = Vec3;
@@ -37,7 +36,7 @@ mod view;
 fn main() {
     let world = cornell_box();
 
-    let samples_per_pixel = 100.0;
+    let samples_per_pixel = 300.0;
     let max_depth = 50;
 
     let ar = 1.0;
@@ -102,13 +101,13 @@ fn main() {
 fn cornell_box() -> HitList {
     let mut objects = HitList::default();
 
-    let red = Arc::new(Lambertian::new(Arc::new(SolidColor::new(Color::new(
+    let red = Arc::new(Lambertian::new(Box::new(SolidColor::new(Color::new(
         0.65, 0.05, 0.05,
     )))));
-    let white = Arc::new(Lambertian::new(Arc::new(SolidColor::new(Color::new(
+    let white = Arc::new(Lambertian::new(Box::new(SolidColor::new(Color::new(
         0.73, 0.73, 0.73,
     )))));
-    let green = Arc::new(Lambertian::new(Arc::new(SolidColor::new(Color::new(
+    let green = Arc::new(Lambertian::new(Box::new(SolidColor::new(Color::new(
         0.12, 0.45, 0.15,
     )))));
     let light = Arc::new(DiffuseLight::new(Color::new(7.0, 7.0, 7.0)));
@@ -150,21 +149,21 @@ fn cornell_box() -> HitList {
         white.clone(),
     )));
 
-    let block = Arc::new(Block::new(
+    let block = Box::new(Block::new(
         Point3::new(0.0, 0.0, 0.0),
         Point3::new(165.0, 330.0, 165.0),
         white.clone(),
     ));
-    let block = Arc::new(RotateY::new(block, 15.0));
+    let block = Box::new(RotateY::new(block, 15.0));
     let block = Arc::new(Translate::new(Point3::new(265.0, 0.0, 295.0), block));
     objects.push(block);
 
-    let block1 = Arc::new(Block::new(
+    let block1 = Box::new(Block::new(
         Point3::new(0.0, 0.0, 0.0),
         Point3::new(165.0, 165.0, 165.0),
         white,
     ));
-    let block1 = Arc::new(RotateY::new(block1, -18.0));
+    let block1 = Box::new(RotateY::new(block1, -18.0));
     let block1 = Arc::new(Translate::new(Point3::new(130.0, 0.0, 65.0), block1));
     objects.push(block1);
 

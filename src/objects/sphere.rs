@@ -15,6 +15,7 @@ pub struct Sphere {
 }
 
 impl Sphere {
+    #[allow(unused)]
     pub fn new(center: Vector3, radius: f32, material: Arc<dyn Material>) -> Self {
         Self {
             center,
