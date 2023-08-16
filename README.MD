@@ -2,6 +2,8 @@
 
 # 🌟 Rust Ray-Tracer 🌟
 
+![Ray-Tracer Demo](https://raw.githubusercontent.com/Almugra/ray-tracing/main/Image1.png)
+
 A feature-rich ray-tracer implemented in Rust, inspired by Peter Shirley's books. Create stunning renderings with diverse textures, dynamic lighting, and parallel processing.
 
 </div>
@@ -13,4 +15,3 @@ A feature-rich ray-tracer implemented in Rust, inspired by Peter Shirley's books
 - 💡 Dynamic Lighting: Experience lifelike lighting effects and reflections.
 - 📸 Adjustable Camera: Capture scenes from any angle with flexible camera settings.
 - 🔍 Objective Rendering: High-quality, physics-based rendering using ray-tracing.
-
